@@ -1,6 +1,6 @@
-# Luxury Ground Transport Platform
+# Kent Limousines — Luxury Ground Transport Platform
 
-A production web platform for a UK licensed private hire operator (Kent, South East London, South Essex), architected to scale nationwide and to franchise.
+A production web platform for **Kent Limousines** (`kentlimousines.com`), a UK licensed private hire operator serving Kent, South East London and South Essex, architected to scale nationwide and to franchise.
 
 Three surfaces, one codebase:
 
@@ -10,7 +10,10 @@ Three surfaces, one codebase:
 
 ## Project status
 
-🟡 **Phase 1 — Discovery complete. Awaiting approval before any application code is written.**
+🟢 **Phase 1 — Discovery complete and approved. Preparing to begin Sprint 0.**
+
+- Agreed decisions: **[`docs/DECISIONS.md`](docs/DECISIONS.md)** (the living decision record; with the spec, the single source of truth).
+- Canonical specification: **[`docs/specification/`](docs/specification/)** (Technical Implementation Specification v1.0).
 
 The full analysis and build plan is in **[`docs/PHASE-1-DISCOVERY.md`](docs/PHASE-1-DISCOVERY.md)**:
 

@@ -2,7 +2,7 @@
 
 **Project:** Luxury Ground Transport Platform (UK licensed private hire operator — Kent, South East London, South Essex; architected to scale nationwide and to franchise).
 **Source of truth:** *Technical Implementation Specification v1.0*.
-**Status:** Discovery complete. **Awaiting approval before any application code is written.**
+**Status:** Discovery complete and **approved**. Agreed decisions are recorded in [`DECISIONS.md`](DECISIONS.md). Awaiting final go-ahead to begin Sprint 0.
 **Prepared for:** Managing Director / project sponsor.
 
 ---
