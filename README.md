@@ -10,7 +10,7 @@ Three surfaces, one codebase:
 
 ## Project status
 
-🟢 **Sprint 1 — Schema, DB constraints & RLS complete.** Next: Sprint 2 (Payload collections, proof gate, media validation, roles).
+🟢 **Sprint 2 (in progress) — CMS proof gate, media & access logic, content collections.** Next: reference-entity transition (venues/vehicles/…) + Media, then Sprint 3 (pricing engine).
 
 - Setup & workflows: **[`docs/DEVELOPMENT.md`](docs/DEVELOPMENT.md)**
 - Agreed decisions: **[`docs/DECISIONS.md`](docs/DECISIONS.md)** (the living decision record; with the spec, the single source of truth).

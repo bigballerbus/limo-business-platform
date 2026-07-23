@@ -83,6 +83,33 @@ These were presented in Phase 1 as "engineering will decide with a recommendatio
 
 ---
 
+### T-010 — CMS persistence: Payload owns content collections (amends T-009) 🟡
+
+**Date:** 2026-07-23 · **Status:** Proposed (proceeding)
+
+Payload (the CMS) is designed to own its tables — its admin UI, drafts, versioning,
+relationships and the publish proof-gate all assume it manages storage. Forcing it
+onto hand-built tables fights the framework and risks fragility. So:
+
+- **Payload owns** the editorial/content collections (pure content — guides, FAQs,
+  case studies, occasions, comparisons, legal/landing pages, redirects, GBP posts —
+  and, in the follow-on reference-entity step, services, locations, venues, routes,
+  vehicles, airports, media). Payload is configured with **UUID ids** so operational
+  references line up. Content-table constraints (e.g. BC1 vehicle capacity, PostGIS
+  pricing columns, RLS on content tables) are re-applied via a follow-on migration.
+- **Our SQL migrations keep owning** the operational tables (bookings, enquiries,
+  quotes, resources, payments, customers…) with their proven BC1–BC5/BC9 constraints
+  and RLS — unchanged.
+- Operational→content references are soft UUID columns (app-level integrity), or FKs
+  re-added after Payload's migrations run.
+
+**Sequencing:** the pure-content collections + shared hooks (proof gate, media
+validation, access, keyword uniqueness) land first (no collision with Sprint 1
+tables); the reference entities (venues et al.) transition in a dedicated,
+re-verified step so the proven operational schema is never destabilised.
+
+The pure proof-gate / media / access domain logic is reused unchanged either way.
+
 ## Open items still outstanding
 
 Resolved so far: OI (brand/domain) → D-003; VAT → D-002; rate-card approach → D-004. Remaining, none blocking Sprint 0 or Sprint 1:
@@ -105,9 +132,10 @@ Resolved so far: OI (brand/domain) → D-003; VAT → D-002; rate-card approach 
 
 ## Change history
 
-| Date       | Change                                                                                                                       |
-| ---------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| 2026-07-23 | Log created. Recorded D-001…D-004 (accepted) and T-001…T-007 (proposed). Remaining open items catalogued.                    |
-| 2026-07-23 | D-003 corrected: primary domain is `kentlimousines.co.uk` (was `.com`).                                                      |
-| 2026-07-23 | Sprint 0 delivered (foundation, CI, Payload wiring). Added T-008 (Lighthouse gating).                                        |
-| 2026-07-23 | Sprint 1 delivered (schema, BC1–BC5/BC9 constraints, RLS, seed, integration tests). Added T-009 (DB-first schema ownership). |
+| Date       | Change                                                                                                                                                                                |
+| ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-07-23 | Log created. Recorded D-001…D-004 (accepted) and T-001…T-007 (proposed). Remaining open items catalogued.                                                                             |
+| 2026-07-23 | D-003 corrected: primary domain is `kentlimousines.co.uk` (was `.com`).                                                                                                               |
+| 2026-07-23 | Sprint 0 delivered (foundation, CI, Payload wiring). Added T-008 (Lighthouse gating).                                                                                                 |
+| 2026-07-23 | Sprint 1 delivered (schema, BC1–BC5/BC9 constraints, RLS, seed, integration tests). Added T-009 (DB-first schema ownership).                                                          |
+| 2026-07-23 | Sprint 2 (part 1): proof-gate/media/access domain logic + Payload content collections & hooks. Added T-010 (Payload owns content collections; reference-entity transition to follow). |

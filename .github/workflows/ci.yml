@@ -122,8 +122,12 @@ jobs:
           node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - name: Run migrations
+      - name: Run migrations (operational schema + constraints + RLS)
         run: pnpm db:migrate
+      - name: Run Payload migrations (CMS content tables)
+        run: pnpm payload migrate
+        env:
+          PAYLOAD_SECRET: ci-placeholder-secret-value-that-is-long-enough-32-plus
       - name: Seed reference data
         run: pnpm db:seed
       - name: Integration tests (constraints + RLS)

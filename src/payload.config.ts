@@ -4,6 +4,10 @@ import { buildConfig } from 'payload';
 import { postgresAdapter } from '@payloadcms/db-postgres';
 import { lexicalEditor } from '@payloadcms/richtext-lexical';
 import { Users } from './collections/Users';
+import { Guides } from './collections/Guides';
+import { Faqs } from './collections/Faqs';
+import { LegalPages } from './collections/LegalPages';
+import { Redirects } from './collections/Redirects';
 
 const filename = fileURLToPath(import.meta.url);
 const dirname = path.dirname(filename);
@@ -22,15 +26,18 @@ export default buildConfig({
     user: Users.slug,
     importMap: { baseDir: path.resolve(dirname) },
   },
-  collections: [Users],
+  collections: [Users, Guides, Faqs, LegalPages, Redirects],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET ?? '',
   typescript: {
     outputFile: path.resolve(dirname, 'payload-types.ts'),
   },
   db: postgresAdapter({
+    // UUID ids so Payload-owned content lines up with operational UUID
+    // references (decision T-010).
+    idType: 'uuid',
     pool: { connectionString: process.env.DATABASE_URL ?? '' },
-    // Drizzle migrations are generated and committed (expand/contract only).
+    // Schema changes are applied via committed migrations (expand/contract).
     push: false,
   }),
 });

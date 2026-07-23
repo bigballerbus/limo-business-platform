@@ -52,10 +52,30 @@ tenant isolation (D3) is enforced by Row-Level Security.
   app-side generator (`src/lib/db/id.ts`).
 - **Migrations are expand/contract only** — never destructive in one deploy.
 
+### Two migration systems (decision T-010)
+
+- **`src/lib/db/migrations/`** — our SQL, run by `pnpm db:migrate`. Owns the
+  **operational** tables plus all constraints, RLS and PostGIS.
+- **`src/migrations/`** — Payload-generated (`pnpm payload migrate:create`),
+  run by `pnpm payload migrate`. Owns the **CMS content** tables (guides, faqs,
+  legal-pages, redirects, users…) with UUID ids.
+
+They share one database and never touch the same tables.
+
 ```bash
-pnpm db:up && pnpm db:reset && pnpm db:seed   # local: start, migrate, seed
-pnpm test:integration                         # prove constraints + RLS
+pnpm db:up                                    # start Postgres + PostGIS
+pnpm db:reset && pnpm payload migrate && pnpm db:seed   # full local rebuild
+pnpm generate:types                           # regenerate Payload types
+pnpm test && pnpm test:integration            # unit + constraint/RLS proofs
 ```
+
+### The publish proof gate (BC8)
+
+Gated content collections run `enforceProofGate` (`src/collections/hooks/`) on
+the draft→published transition. It calls the pure `lib/domain/proof-gate` logic
+(thresholds, evidence counts, doorway-page similarity) and **throws** to block a
+non-compliant publish — there is no UI path around it. Primary keywords are kept
+unique sitewide via the `page_keywords` table (T-006).
 
 ## Repository map
 
