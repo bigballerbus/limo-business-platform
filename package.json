@@ -13,6 +13,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
+    "payload": "cross-env NODE_OPTIONS=--no-deprecation payload",
+    "generate:types": "cross-env NODE_OPTIONS=--no-deprecation payload generate:types",
+    "generate:importmap": "cross-env NODE_OPTIONS=--no-deprecation payload generate:importmap",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
@@ -21,28 +24,41 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
-    "test:e2e": "playwright test",
+    "test:e2e": "playwright test --project=e2e",
+    "test:a11y": "playwright test --project=a11y",
+    "test:seo": "playwright test --project=seo",
+    "lhci": "lhci autorun",
     "db:up": "docker compose up -d",
     "db:down": "docker compose down",
     "db:logs": "docker compose logs -f postgres",
     "prepare": "husky || true"
   },
   "dependencies": {
+    "@payloadcms/db-postgres": "^3.0.0",
+    "@payloadcms/next": "^3.0.0",
+    "@payloadcms/richtext-lexical": "^3.0.0",
+    "graphql": "^16.9.0",
     "next": "^15.3.0",
+    "payload": "^3.0.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
+    "sharp": "^0.34.0",
     "zod": "^3.23.8"
   },
   "devDependencies": {
     "@eslint/js": "^9.14.0",
     "@commitlint/cli": "^19.5.0",
     "@commitlint/config-conventional": "^19.5.0",
+    "@lhci/cli": "^0.14.0",
+    "@axe-core/playwright": "^4.10.0",
     "@next/eslint-plugin-next": "^15.3.0",
+    "@playwright/test": "^1.48.0",
     "@tailwindcss/postcss": "^4.0.0",
     "@types/node": "^22.9.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "@vitest/coverage-v8": "^2.1.5",
+    "cross-env": "^7.0.3",
     "eslint": "^9.14.0",
     "eslint-config-prettier": "^9.1.0",
     "husky": "^9.1.6",
@@ -54,5 +70,11 @@
     "typescript": "^5.6.3",
     "typescript-eslint": "^8.14.0",
     "vitest": "^2.1.5"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "sharp",
+      "esbuild"
+    ]
   }
 }

@@ -2,6 +2,14 @@ import type { Metadata, Viewport } from 'next';
 import { SITE } from '@/config/site';
 import '@/styles/globals.css';
 
+/**
+ * Root layout for the public site route group.
+ *
+ * The app uses multiple root layouts (Next.js route groups): this one owns the
+ * public site's `<html>`, while the Payload admin group owns its own. This is
+ * the standard Payload 3 + Next integration and is why there is no shared
+ * `src/app/layout.tsx`.
+ */
 export const metadata: Metadata = {
   metadataBase: new URL(SITE.url),
   title: {
@@ -25,7 +33,7 @@ export const viewport: Viewport = {
   ],
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function SiteLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en-GB">
       <body>{children}</body>

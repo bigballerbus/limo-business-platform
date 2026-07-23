@@ -46,6 +46,9 @@
     --color-surface-raised: #1e1a17;
     --color-surface-inverse: #faf8f5;
     --color-line: #322c26;
+    /* Lighter champagne so the accent keeps ≥4.5:1 on the dark surface.
+       (The default #8a6d3b passes on white but not on near-black.) */
+    --color-accent: #c9a86a;
   }
 }
 

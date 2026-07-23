@@ -1,3 +1,5 @@
+import { withPayload } from '@payloadcms/next/withPayload';
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
@@ -16,6 +18,6 @@ const nextConfig = {
   },
 };
 
-// Payload wraps the Next config via withPayload(); that wiring lands in the
-// Payload sprint. Until then the app is a standard Next.js application.
-export default nextConfig;
+// Payload runs natively inside the Next app; withPayload wires the admin,
+// the @payload-config alias and server-only externals.
+export default withPayload(nextConfig);

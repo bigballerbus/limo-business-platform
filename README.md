@@ -10,8 +10,9 @@ Three surfaces, one codebase:
 
 ## Project status
 
-🟢 **Phase 1 — Discovery complete and approved. Preparing to begin Sprint 0.**
+🟢 **Sprint 0 — Foundation & CI complete.** Next: Sprint 1 (schema, migrations, DB constraints, RLS).
 
+- Setup & workflows: **[`docs/DEVELOPMENT.md`](docs/DEVELOPMENT.md)**
 - Agreed decisions: **[`docs/DECISIONS.md`](docs/DECISIONS.md)** (the living decision record; with the spec, the single source of truth).
 - Canonical specification: **[`docs/specification/`](docs/specification/)** (Technical Implementation Specification v1.0).
 

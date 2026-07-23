@@ -1,0 +1,17 @@
+# Secret scanning config (gitleaks). Extends the default ruleset.
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Paths that legitimately contain placeholder or binary content"
+paths = [
+  '''docs/specification/.*''',
+  '''\.env\.example$''',
+  '''pnpm-lock\.yaml$''',
+]
+# Obvious placeholders used in examples and CI must not trip the scanner.
+regexes = [
+  '''change-me-to-a-long-random-string-min-32-chars''',
+  '''ci-placeholder-secret-value-that-is-long-enough-32-plus''',
+  '''local-development-only-secret-value-please-change-1234''',
+]

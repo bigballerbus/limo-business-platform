@@ -8,15 +8,16 @@ out/
 dist/
 build/
 
-# Payload generated artifacts
+# Payload generated types (regenerated from config; nothing imports them yet).
+# The admin importMap.js IS committed — the admin layout imports it at build.
 /src/payload-types.ts
-/src/app/(payload)/admin/importMap.js
 
 # Test / coverage
 coverage/
 playwright-report/
 test-results/
 .nyc_output/
+.lighthouseci/
 
 # Env & secrets
 .env
