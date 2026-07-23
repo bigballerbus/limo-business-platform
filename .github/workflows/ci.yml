@@ -92,6 +92,43 @@ jobs:
       - name: Lighthouse CI (Core Web Vitals + byte budgets)
         run: pnpm lhci
 
+  integration:
+    name: DB constraints & RLS (integration)
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgis/postgis:16-3.4
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: kentlimos
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+    env:
+      # Owner (superuser) connection — migrations create extensions + the app role.
+      DATABASE_URL: postgres://postgres:postgres@localhost:5432/kentlimos
+      # Application role — non-owner, non-BYPASSRLS (created by migration 0001).
+      APP_DATABASE_URL: postgres://kentlimos_app:kentlimos_app@localhost:5432/kentlimos
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Run migrations
+        run: pnpm db:migrate
+      - name: Seed reference data
+        run: pnpm db:seed
+      - name: Integration tests (constraints + RLS)
+        run: pnpm test:integration
+
   security:
     name: Secret & dependency scan
     runs-on: ubuntu-latest

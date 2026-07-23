@@ -32,7 +32,30 @@ pnpm dev                      # http://localhost:3000  ·  admin at /admin
 | `pnpm test:e2e` / `test:a11y` / `test:seo` | Playwright suites                             |
 | `pnpm lhci`                                | Lighthouse budgets (Core Web Vitals)          |
 | `pnpm db:up` / `db:down`                   | Local database up/down                        |
+| `pnpm db:migrate` / `db:reset`             | Apply migrations / drop-and-reapply (dev)     |
+| `pnpm db:seed`                             | Seed reference data (Kent Limousines tenant)  |
+| `pnpm test:integration`                    | Constraint + RLS tests against live Postgres  |
 | `pnpm generate:types`                      | Regenerate Payload types after schema changes |
+
+## Database
+
+The schema is **owned by our SQL migrations** (`src/lib/db/migrations/`, decision
+T-009), applied by `scripts/db/migrate.ts` and tracked in `schema_migrations`.
+BC1–BC5 and BC9 are enforced as `CHECK` / `EXCLUDE` / `NOT NULL` constraints;
+tenant isolation (D3) is enforced by Row-Level Security.
+
+- **Two roles:** the **owner** (`DATABASE_URL`) runs migrations and seeds; the
+  **app role** (`APP_DATABASE_URL`) is non-owner and non-`BYPASSRLS` so RLS is
+  enforced at runtime. Runtime tenant-scoped access goes through `withTenant()`
+  (`src/lib/db/client.ts`), which sets `app.tenant_id` per transaction.
+- **IDs** are UUIDv7 (time-sortable): a DB `uuidv7()` function and a matching
+  app-side generator (`src/lib/db/id.ts`).
+- **Migrations are expand/contract only** — never destructive in one deploy.
+
+```bash
+pnpm db:up && pnpm db:reset && pnpm db:seed   # local: start, migrate, seed
+pnpm test:integration                         # prove constraints + RLS
+```
 
 ## Repository map
 

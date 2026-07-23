@@ -14,8 +14,13 @@ import { z } from 'zod';
 
 const serverSchema = z.object({
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
-  /** Postgres connection string (Neon in cloud, Docker locally). */
+  /** Owner Postgres connection — migrations and seeds (Neon in cloud, Docker locally). */
   DATABASE_URL: z.string().url().optional(),
+  /**
+   * Application Postgres connection — a non-owner, non-BYPASSRLS role so RLS is
+   * enforced at runtime (D3). Falls back to DATABASE_URL if unset.
+   */
+  APP_DATABASE_URL: z.string().url().optional(),
   /** Payload signing secret. Required once the CMS is wired (Payload sprint). */
   PAYLOAD_SECRET: z.string().min(32).optional(),
 });

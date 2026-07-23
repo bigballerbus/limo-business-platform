@@ -10,7 +10,7 @@ Three surfaces, one codebase:
 
 ## Project status
 
-🟢 **Sprint 0 — Foundation & CI complete.** Next: Sprint 1 (schema, migrations, DB constraints, RLS).
+🟢 **Sprint 1 — Schema, DB constraints & RLS complete.** Next: Sprint 2 (Payload collections, proof gate, media validation, roles).
 
 - Setup & workflows: **[`docs/DEVELOPMENT.md`](docs/DEVELOPMENT.md)**
 - Agreed decisions: **[`docs/DECISIONS.md`](docs/DECISIONS.md)** (the living decision record; with the spec, the single source of truth).
