@@ -40,11 +40,11 @@ The business's services are treated as **VAT-exempt — no VAT is charged on any
 **Date:** 2026-07-23 · **Decided by:** MD · **Status:** Accepted
 
 - **Brand name:** Kent Limousines
-- **Primary domain:** `kentlimousines.com`
+- **Primary domain:** `kentlimousines.co.uk`
 
 This fixes the URL taxonomy (permanent once indexed) and the tenant's public identity. A strong exact-match local brand for Kent SEO.
 
-**Housekeeping (non-blocking):** secure matching social handles; run a trademark check. **Franchise note:** the brand is Kent-anchored; nationwide expansion / franchising will trade under their own local brands, which the multi-tenant model (D3) already supports — no schema impact.
+**Housekeeping (non-blocking):** secure matching social handles; run a trademark check. If the `.com` is also owned, 301-redirect it to the `.co.uk` primary to consolidate SEO authority. **Franchise note:** the brand is Kent-anchored; nationwide expansion / franchising will trade under their own local brands, which the multi-tenant model (D3) already supports — no schema impact.
 
 ---
 
@@ -100,3 +100,4 @@ Resolved so far: OI (brand/domain) → D-003; VAT → D-002; rate-card approach 
 | Date | Change |
 |---|---|
 | 2026-07-23 | Log created. Recorded D-001…D-004 (accepted) and T-001…T-007 (proposed). Remaining open items catalogued. |
+| 2026-07-23 | D-003 corrected: primary domain is `kentlimousines.co.uk` (was `.com`). |

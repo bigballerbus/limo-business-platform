@@ -1,6 +1,6 @@
 # Kent Limousines — Luxury Ground Transport Platform
 
-A production web platform for **Kent Limousines** (`kentlimousines.com`), a UK licensed private hire operator serving Kent, South East London and South Essex, architected to scale nationwide and to franchise.
+A production web platform for **Kent Limousines** (`kentlimousines.co.uk`), a UK licensed private hire operator serving Kent, South East London and South Essex, architected to scale nationwide and to franchise.
 
 Three surfaces, one codebase:
 
