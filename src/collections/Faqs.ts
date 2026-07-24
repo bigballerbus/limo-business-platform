@@ -1,5 +1,6 @@
 import type { CollectionConfig } from 'payload';
 import { hasRole, publishedOrRole } from './access';
+import { revalidateContent } from './hooks/revalidate';
 
 /**
  * FAQs — ungated reusable Q&A, surfaced on templates and indexed for search.
@@ -15,6 +16,7 @@ export const Faqs: CollectionConfig = {
     update: hasRole(['admin', 'content_editor', 'marketing']),
     delete: hasRole(['admin']),
   },
+  hooks: { afterChange: [revalidateContent] },
   fields: [
     { name: 'question', type: 'text', required: true },
     { name: 'answer', type: 'textarea', required: true },

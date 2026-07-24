@@ -2,6 +2,7 @@ import type { CollectionConfig } from 'payload';
 import { hasRole, publishedOrRole } from './access';
 import { enforceProofGate } from './hooks/proofGate';
 import { enforceUniqueKeyword, recordKeyword } from './hooks/pageKeyword';
+import { revalidateContent } from './hooks/revalidate';
 import { faqFields, publishingFields, seoFields } from './fields/shared';
 
 /**
@@ -23,7 +24,7 @@ export const Guides: CollectionConfig = {
   },
   hooks: {
     beforeValidate: [enforceUniqueKeyword('guides'), enforceProofGate('guides')],
-    afterChange: [recordKeyword('guides')],
+    afterChange: [recordKeyword('guides'), revalidateContent],
   },
   fields: [
     { name: 'title', type: 'text', required: true },

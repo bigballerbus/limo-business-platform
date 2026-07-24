@@ -18,13 +18,13 @@ describe('preServiceSchedule', () => {
 
   it('places each milestone the right distance before pickup', () => {
     const now = new Date('2030-06-01T00:00:00Z');
-    const byStep = Object.fromEntries(
+    const byStep = new Map(
       preServiceSchedule(pickupAt, now).map((m) => [m.step, m.sendAt.getTime()]),
     );
-    expect(pickupAt.getTime() - byStep.balance_reminder).toBe(
+    expect(pickupAt.getTime() - byStep.get('balance_reminder')!).toBe(
       PRE_SERVICE_OFFSETS_MINUTES.balance_reminder * 60_000,
     );
-    expect(pickupAt.getTime() - byStep.en_route).toBe(2 * HOUR);
+    expect(pickupAt.getTime() - byStep.get('en_route')!).toBe(2 * HOUR);
   });
 
   it('drops milestones already in the past for a late booking', () => {

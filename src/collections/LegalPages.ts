@@ -1,5 +1,6 @@
 import type { CollectionConfig } from 'payload';
 import { hasRole, publishedOrRole } from './access';
+import { revalidateContent } from './hooks/revalidate';
 
 /**
  * Legal pages (privacy, terms, booking terms, safeguarding). Ungated content;
@@ -15,6 +16,7 @@ export const LegalPages: CollectionConfig = {
     update: hasRole(['admin', 'content_editor']),
     delete: hasRole(['admin']),
   },
+  hooks: { afterChange: [revalidateContent] },
   fields: [
     { name: 'title', type: 'text', required: true },
     { name: 'slug', type: 'text', required: true, unique: true, index: true },

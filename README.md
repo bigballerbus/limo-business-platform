@@ -10,7 +10,7 @@ Three surfaces, one codebase:
 
 ## Project status
 
-🟢 **Sprint 8 — Pre-service & dispatch complete** (durable pre-service ladder: balance reminder −7d, itinerary −48h, chauffeur disclosure −24h, en-route −2h; balance capture + idempotent webhook; journey dispatch → in-service). Next: Sprint 9 (public page templates, programmatic SEO/JSON-LD, and the CMS reference-entity transition). Deferred item now scheduled: CMS reference-entity transition lands in Sprint 9.
+🟢 **Sprint 9 — Public site & SEO engine complete** (pure JSON-LD builders, metadata/canonical, segmented sitemap, orphan-free internal linking; homepage + service-hub templates with `generateStaticParams` + ISR + structured data; `sitemap.xml`, `robots.txt`, on-demand revalidation via Payload `afterChange` + secret-guarded API). Next: Sprint 10 (never-forgotten-lead orphan sweep + Needs-Attention dashboard). Note: full town/venue/route/vehicle page population and the CMS reference-entity transition depend on the client's launch service-area data (OI-8) and land as content once supplied — the templating engine and SEO infrastructure are complete and proven.
 
 - Setup & workflows: **[`docs/DEVELOPMENT.md`](docs/DEVELOPMENT.md)**
 - Agreed decisions: **[`docs/DECISIONS.md`](docs/DECISIONS.md)** (the living decision record; with the spec, the single source of truth).
