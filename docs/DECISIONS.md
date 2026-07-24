@@ -132,10 +132,11 @@ Resolved so far: OI (brand/domain) → D-003; VAT → D-002; rate-card approach 
 
 ## Change history
 
-| Date       | Change                                                                                                                                                                                |
-| ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 2026-07-23 | Log created. Recorded D-001…D-004 (accepted) and T-001…T-007 (proposed). Remaining open items catalogued.                                                                             |
-| 2026-07-23 | D-003 corrected: primary domain is `kentlimousines.co.uk` (was `.com`).                                                                                                               |
-| 2026-07-23 | Sprint 0 delivered (foundation, CI, Payload wiring). Added T-008 (Lighthouse gating).                                                                                                 |
-| 2026-07-23 | Sprint 1 delivered (schema, BC1–BC5/BC9 constraints, RLS, seed, integration tests). Added T-009 (DB-first schema ownership).                                                          |
-| 2026-07-23 | Sprint 2 (part 1): proof-gate/media/access domain logic + Payload content collections & hooks. Added T-010 (Payload owns content collections; reference-entity transition to follow). |
+| Date       | Change                                                                                                                                                                                                                      |
+| ---------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-07-23 | Log created. Recorded D-001…D-004 (accepted) and T-001…T-007 (proposed). Remaining open items catalogued.                                                                                                                   |
+| 2026-07-23 | D-003 corrected: primary domain is `kentlimousines.co.uk` (was `.com`).                                                                                                                                                     |
+| 2026-07-23 | Sprint 0 delivered (foundation, CI, Payload wiring). Added T-008 (Lighthouse gating).                                                                                                                                       |
+| 2026-07-23 | Sprint 1 delivered (schema, BC1–BC5/BC9 constraints, RLS, seed, integration tests). Added T-009 (DB-first schema ownership).                                                                                                |
+| 2026-07-23 | Sprint 2 (part 1): proof-gate/media/access domain logic + Payload content collections & hooks. Added T-010 (Payload owns content collections; reference-entity transition to follow).                                       |
+| 2026-07-23 | Sprint 3: pricing engine (calculateQuote, cost model, BC3 margin floor) — pure, 100% branch coverage — against the placeholder rate card (D-004). CMS reference-entity transition deferred to the page-templates milestone. |
