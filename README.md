@@ -10,8 +10,9 @@ Three surfaces, one codebase:
 
 ## Project status
 
-🟢 **Phase 1 — Discovery complete and approved. Preparing to begin Sprint 0.**
+🟢 **Sprint 12 — Reporting, hardening & launch readiness complete** (pure funnel/conversion KPIs + `dashboardMetrics`; `reporting_funnel` view for Looker Studio; middleware security headers with Report-Only CSP; per-IP quote rate limiting; `docs/LAUNCH-READINESS.md` — Definition-of-Done status, §13.9 alerting spec, runbooks, vendor cutover, go-live gate). **Core build (Sprints 0–12) complete.** Remaining before go-live is client/vendor input (OI-2/3/6/8/11/12) and the manual UAT/accessibility/legal sign-offs in the launch gate — every seam for those is built, stubbed and tested.
 
+- Setup & workflows: **[`docs/DEVELOPMENT.md`](docs/DEVELOPMENT.md)**
 - Agreed decisions: **[`docs/DECISIONS.md`](docs/DECISIONS.md)** (the living decision record; with the spec, the single source of truth).
 - Canonical specification: **[`docs/specification/`](docs/specification/)** (Technical Implementation Specification v1.0).
 

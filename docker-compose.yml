@@ -1,0 +1,24 @@
+# Local development database — Postgres 16 with PostGIS.
+# Mirrors the production engine (Neon) so geospatial pricing (D2) and the
+# exclusion constraints (BC5) behave identically in development.
+services:
+  postgres:
+    image: postgis/postgis:16-3.4
+    container_name: kentlimos-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: kentlimos
+      POSTGRES_PASSWORD: kentlimos
+      POSTGRES_DB: kentlimos
+    ports:
+      - '5432:5432'
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U kentlimos -d kentlimos']
+      interval: 5s
+      timeout: 5s
+      retries: 12
+
+volumes:
+  pgdata:
