@@ -10,7 +10,7 @@ Three surfaces, one codebase:
 
 ## Project status
 
-🟢 **Sprint 6 — Safeguarding & capacity complete** (BC1 multi-vehicle routing for 9+ parties with no lost lead; BC2 parent/guardian capture, linkage and deposit gate). Next: Sprint 7 (booking + Stripe deposit, BC5 double-booking rollback). Deferred: CMS reference-entity transition alongside the page-templates milestone.
+🟢 **Sprint 7 — Booking & deposit complete** (`PaymentProvider` boundary + Stripe-semantics stub, deposit intent, raw-body signed webhook; BC5 resource-lock-with-rollback and automatic refund; BC4 wedding backup; BC2 deposit gate). Next: Sprint 8 (pre-service sequence: balance reminder, itinerary, −24h chauffeur disclosure, dispatch). Deferred: CMS reference-entity transition alongside the page-templates milestone.
 
 - Setup & workflows: **[`docs/DEVELOPMENT.md`](docs/DEVELOPMENT.md)**
 - Agreed decisions: **[`docs/DECISIONS.md`](docs/DECISIONS.md)** (the living decision record; with the spec, the single source of truth).

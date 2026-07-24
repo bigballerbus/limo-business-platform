@@ -110,6 +110,34 @@ re-verified step so the proven operational schema is never destabilised.
 
 The pure proof-gate / media / access domain logic is reused unchanged either way.
 
+---
+
+### T-011 — Payments: a `PaymentProvider` boundary with a stub, Stripe behind it 🟡
+
+**Date:** 2026-07-24 · **Status:** Proposed (proceeding)
+
+The booking flow depends on a `PaymentProvider` interface (create deposit intent,
+refund, verify + parse webhook), never on Stripe directly — the same seam the
+messaging pipeline uses for `Notifier`. A stub implements it with the **same
+semantics** Stripe has: intent/refund identifiers, booking-keyed idempotency, and
+HMAC-signed webhooks in Stripe's `t=…,v1=…` scheme (constant-time verify, replay
+window). This makes the whole deposit → confirm → refund path testable with no
+live keys, and the real `StripePaymentProvider` is a drop-in for the integrations
+sprint (OI-12). The webhook route reads the **raw body** and verifies before
+parsing; signature verification fails closed (HTTP 400, nothing processed).
+
+**Deposit terms are a documented placeholder** (`PLACEHOLDER_DEPOSIT_POLICY`: 20%,
+£50 minimum, balance due 14 days before pickup) pending the client's real terms
+(OI-6) — configuration, not code, exactly like the rate card (D-004).
+
+**BC5 fulfilment guarantee:** resource locks are taken inside a `SAVEPOINT` in the
+deposit-confirmation transaction. If the `EXCLUDE` constraint fires (a concurrent
+booking took the vehicle/chauffeur), the locks roll back to the savepoint, the
+booking is cancelled `resource_unavailable`, and the captured deposit is
+**automatically refunded** — the platform never holds money it cannot fulfil. The
+webhook is idempotent, including re-driving a refund that was recorded-as-owed but
+whose provider call had not yet completed.
+
 ## Open items still outstanding
 
 Resolved so far: OI (brand/domain) → D-003; VAT → D-002; rate-card approach → D-004. Remaining, none blocking Sprint 0 or Sprint 1:
@@ -143,3 +171,4 @@ Resolved so far: OI (brand/domain) → D-003; VAT → D-002; rate-card approach 
 | 2026-07-23 | Sprint 4: shared Zod quote schema, submitQuote Server Action, atomic lead-capture transaction (write-once first-touch, BC9 next-action, enquiry/created event), geocoder stub, quote UI. Domain events recorded to audit now; async Inngest dispatch in Sprint 5.                                                                                                                                                                                                              |
 | 2026-07-23 | Sprint 5: Inngest client/functions/route; enquiryCreated (instant response + owner alert) and slaEnforcement workflows; BC6 message-class send gate (notifier stub); pure SLA logic; trace IDs (D-001). Notifier providers (Resend/Twilio) and quoted/follow_up SLA dwell (OI-11) still pending.                                                                                                                                                                               |
 | 2026-07-24 | Sprint 6: safeguarding & capacity rules (pure `capacityDecision`/`canTakeDeposit`, BC1/BC2). Enquiry critical path branches a 9+ party to `captureMultiVehicleLead` (lead captured, no quote fabricated, routed to a human) and captures the parent/guardian as a linked contact on minors bookings (`parent_contact_id`, `under_18_passengers`). Quote UI reveals a conditional guardian fieldset; deposit remains gated on guardian verification (a later, deliberate step). |
+| 2026-07-24 | Sprint 7: booking & deposit critical path (T-011). `PaymentProvider` boundary + Stripe-semantics stub (HMAC webhook, idempotency); pure deposit split + resource plan (turnaround buffer, BC4 backup guard); `createBookingFromQuote` (BC2 deposit gate) and `confirmDepositAndAssign` (SAVEPOINT resource locks → BC5 exclusion → cancel + auto-refund). Raw-body webhook route. Inngest `depositPaid` confirmation. Deposit terms placeholder pending OI-6.                  |
