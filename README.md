@@ -10,7 +10,7 @@ Three surfaces, one codebase:
 
 ## Project status
 
-🟢 **Sprint 3 — Pricing engine complete** (BC3 margin floor, 100% branch coverage). Next: Sprint 4 (quote engine UI + Server Actions + CRM write path). Deferred: CMS reference-entity transition (venues/vehicles/…) alongside the page-templates milestone.
+🟢 **Sprint 4 — Quote engine + CRM write path complete** (shared Zod schema, atomic lead capture with write-once first-touch + BC9, quote UI). Next: Sprint 5 (speed-to-lead: instant response, alerts, SLA escalation via Inngest). Deferred: CMS reference-entity transition alongside the page-templates milestone.
 
 - Setup & workflows: **[`docs/DEVELOPMENT.md`](docs/DEVELOPMENT.md)**
 - Agreed decisions: **[`docs/DECISIONS.md`](docs/DECISIONS.md)** (the living decision record; with the spec, the single source of truth).
