@@ -146,7 +146,7 @@ export async function captureQuoteLead(
     // 4. Emit the domain event (recorded now; dispatched async from Sprint 5).
     await recordEvent(client, tenantId, {
       name: 'enquiry/created',
-      data: { enquiryId, source: submission.attribution.lastTouch },
+      data: { enquiryId, tenantId, source: submission.attribution.lastTouch },
     });
 
     return { customerId, enquiryId, quoteId, reference: enquiryRef };

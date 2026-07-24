@@ -5,8 +5,11 @@
  * search reindex, ISR revalidation, audit) are wired from Sprint 5.
  */
 export type DomainEvent =
-  | { name: 'enquiry/created'; data: { enquiryId: string; source: string } }
-  | { name: 'enquiry/stage.changed'; data: { enquiryId: string; from: string; to: string } }
+  | { name: 'enquiry/created'; data: { enquiryId: string; tenantId: string; source: string } }
+  | {
+      name: 'enquiry/stage.changed';
+      data: { enquiryId: string; tenantId: string; from: string; to: string };
+    }
   | { name: 'quote/issued'; data: { quoteId: string; value: number } }
   | { name: 'quote/abandoned'; data: { enquiryId: string; lastStep: number } }
   | { name: 'booking/deposit.paid'; data: { bookingId: string } }

@@ -8,6 +8,8 @@ import { toPricingInput } from '@/lib/domain/quote/mapToPricing';
 import { captureQuoteLead } from '@/lib/crm/leadCapture';
 import { getDefaultTenant } from '@/lib/tenant/resolve';
 import { stubGeocoder } from '@/lib/geo/geocoder';
+import { inngest } from '@/inngest/client';
+import { newTraceId, traceLog } from '@/lib/observability/trace';
 import type { QuoteActionResult } from './types';
 
 /**
@@ -52,7 +54,21 @@ export async function submitQuote(raw: unknown): Promise<QuoteActionResult> {
     throw error;
   }
 
+  const traceId = newTraceId();
   const lead = await captureQuoteLead(tenant.id, { submission: data, pricing });
+  traceLog(traceId, 'enquiry_created', { enquiryId: lead.enquiryId, reference: lead.reference });
+
+  // Fire the async pipeline (instant response, owner alert). Non-blocking — the
+  // price has already rendered; a slow or absent Inngest must never fail the
+  // customer's request. The event is already durably recorded in the audit log.
+  try {
+    await inngest.send({
+      name: 'enquiry/created',
+      data: { enquiryId: lead.enquiryId, tenantId: tenant.id, source: data.attribution.lastTouch },
+    });
+  } catch (error) {
+    traceLog(traceId, 'inngest_send_failed', { message: (error as Error).message });
+  }
 
   return {
     status: 'ok',
