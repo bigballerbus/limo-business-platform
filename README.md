@@ -10,7 +10,7 @@ Three surfaces, one codebase:
 
 ## Project status
 
-🟢 **Sprint 7 — Booking & deposit complete** (`PaymentProvider` boundary + Stripe-semantics stub, deposit intent, raw-body signed webhook; BC5 resource-lock-with-rollback and automatic refund; BC4 wedding backup; BC2 deposit gate). Next: Sprint 8 (pre-service sequence: balance reminder, itinerary, −24h chauffeur disclosure, dispatch). Deferred: CMS reference-entity transition alongside the page-templates milestone.
+🟢 **Sprint 8 — Pre-service & dispatch complete** (durable pre-service ladder: balance reminder −7d, itinerary −48h, chauffeur disclosure −24h, en-route −2h; balance capture + idempotent webhook; journey dispatch → in-service). Next: Sprint 9 (public page templates, programmatic SEO/JSON-LD, and the CMS reference-entity transition). Deferred item now scheduled: CMS reference-entity transition lands in Sprint 9.
 
 - Setup & workflows: **[`docs/DEVELOPMENT.md`](docs/DEVELOPMENT.md)**
 - Agreed decisions: **[`docs/DECISIONS.md`](docs/DECISIONS.md)** (the living decision record; with the spec, the single source of truth).

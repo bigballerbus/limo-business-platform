@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { confirmDepositAndAssign } from '@/lib/crm/booking';
+import { confirmBalancePaid, confirmDepositAndAssign } from '@/lib/crm/booking';
 import { stubPayments } from '@/lib/payments/stub';
 import { WebhookVerificationError } from '@/lib/payments/provider';
 import { getDefaultTenant } from '@/lib/tenant/resolve';
@@ -28,18 +28,29 @@ export async function POST(request: Request): Promise<Response> {
     throw error;
   }
 
-  if (event.type !== 'deposit.succeeded') {
-    // deposit.failed and any future types are acknowledged; the booking simply
-    // stays pending_deposit and the never-forgotten-lead sweep picks it up.
-    traceLog(traceId, 'payment_webhook_ignored', { type: event.type });
-    return NextResponse.json({ received: true });
+  const tenant = await getDefaultTenant();
+
+  if (event.type === 'deposit.succeeded') {
+    const result = await confirmDepositAndAssign(tenant.id, { intentId: event.intentId });
+    traceLog(traceId, 'payment_webhook_processed', {
+      bookingId: result.bookingId,
+      outcome: result.status,
+    });
+    return NextResponse.json({ received: true, outcome: result.status });
   }
 
-  const tenant = await getDefaultTenant();
-  const result = await confirmDepositAndAssign(tenant.id, { intentId: event.intentId });
-  traceLog(traceId, 'payment_webhook_processed', {
-    bookingId: result.bookingId,
-    outcome: result.status,
-  });
-  return NextResponse.json({ received: true, outcome: result.status });
+  if (event.type === 'balance.succeeded') {
+    const result = await confirmBalancePaid(tenant.id, event.intentId);
+    traceLog(traceId, 'payment_webhook_processed', {
+      bookingId: result.bookingId,
+      outcome: result.status,
+    });
+    return NextResponse.json({ received: true, outcome: result.status });
+  }
+
+  // deposit.failed / balance.failed and any future types are acknowledged; the
+  // booking simply stays where it is and the never-forgotten-lead sweep and the
+  // balance reminder ladder pick it up.
+  traceLog(traceId, 'payment_webhook_ignored', { type: event.type });
+  return NextResponse.json({ received: true });
 }

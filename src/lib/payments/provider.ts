@@ -19,7 +19,8 @@ export interface RefundResult {
   amountPence: number;
 }
 
-export type PaymentEventType = 'deposit.succeeded' | 'deposit.failed';
+export type PaymentEventType =
+  'deposit.succeeded' | 'deposit.failed' | 'balance.succeeded' | 'balance.failed';
 
 export interface PaymentEvent {
   id: string;

@@ -406,3 +406,197 @@ export async function confirmDepositAndAssign(
 
   return outcome;
 }
+
+// ── Pre-service: balance capture and dispatch (spec §5.6) ────────────────────
+
+export interface BalanceIntentResult {
+  bookingId: string;
+  intentId: string;
+  clientSecret: string;
+  balancePence: number;
+}
+
+/**
+ * Create the balance payment intent for a confirmed booking, chased by the
+ * −7-day balance reminder. Idempotent by intent id (keyed to the booking) so a
+ * repeated reminder never mints a second charge.
+ */
+export async function createBalanceIntent(
+  tenantId: string,
+  bookingId: string,
+  provider: PaymentProvider = stubPayments,
+): Promise<BalanceIntentResult> {
+  return withTenant(tenantId, async (client) => {
+    const b = await client.query<{ balance_pence: number; balance_paid_at: Date | null }>(
+      `SELECT balance_pence, balance_paid_at FROM bookings WHERE id = $1`,
+      [bookingId],
+    );
+    const booking = b.rows[0];
+    if (!booking) throw new QuoteNotBookableError('Booking not found');
+    if (booking.balance_paid_at) throw new QuoteNotBookableError('Balance already paid');
+
+    const idempotencyKey = `${bookingId}-balance`;
+    const existing = await client.query<{ stripe_payment_intent_id: string }>(
+      `SELECT stripe_payment_intent_id FROM payments
+        WHERE booking_id = $1 AND type = 'balance' AND status = 'pending'
+        ORDER BY created_at DESC LIMIT 1`,
+      [bookingId],
+    );
+
+    const intent = await provider.createDepositIntent({
+      bookingId,
+      amountPence: booking.balance_pence,
+      idempotencyKey,
+    });
+
+    if (!existing.rows[0]) {
+      await client.query(
+        `INSERT INTO payments
+           (tenant_id, booking_id, type, amount_pence, stripe_payment_intent_id, status)
+         VALUES ($1,$2,'balance',$3,$4,'pending')`,
+        [tenantId, bookingId, booking.balance_pence, intent.intentId],
+      );
+    }
+
+    return {
+      bookingId,
+      intentId: intent.intentId,
+      clientSecret: intent.clientSecret,
+      balancePence: booking.balance_pence,
+    };
+  });
+}
+
+export type BalanceResult =
+  { status: 'already_processed'; bookingId: string } | { status: 'paid'; bookingId: string };
+
+/** Mark the balance paid on the balance-succeeded webhook. Idempotent. */
+export async function confirmBalancePaid(
+  tenantId: string,
+  intentId: string,
+): Promise<BalanceResult> {
+  return withTenant(tenantId, async (client) => {
+    const p = await client.query<{ id: string; status: string; booking_id: string }>(
+      `SELECT id, status, booking_id FROM payments
+        WHERE stripe_payment_intent_id = $1 AND type = 'balance'`,
+      [intentId],
+    );
+    const payment = p.rows[0];
+    if (!payment) throw new QuoteNotBookableError('No balance payment for that intent');
+    if (payment.status === 'succeeded') {
+      return { status: 'already_processed', bookingId: payment.booking_id };
+    }
+
+    await client.query(`UPDATE payments SET status = 'succeeded', paid_at = now() WHERE id = $1`, [
+      payment.id,
+    ]);
+    await client.query(
+      `UPDATE bookings SET balance_paid_at = now(), updated_at = now() WHERE id = $1`,
+      [payment.booking_id],
+    );
+    await recordEvent(client, tenantId, {
+      name: 'booking/balance.paid',
+      data: { bookingId: payment.booking_id },
+    });
+    return { status: 'paid', bookingId: payment.booking_id };
+  });
+}
+
+export interface ServiceContext {
+  customerId: string;
+  pickupAt: string;
+  serviceType: string;
+  vehicleId: string | null;
+  chauffeurId: string | null;
+}
+
+/**
+ * Load the pieces the pre-service ladder needs: the customer to message, the
+ * pickup time to schedule against, and the assigned (non-backup) vehicle and
+ * chauffeur for the itinerary and the −24h chauffeur disclosure.
+ */
+export async function loadServiceContext(
+  tenantId: string,
+  bookingId: string,
+): Promise<ServiceContext | null> {
+  return withTenant(tenantId, async (client) => {
+    const r = await client.query<{
+      customer_id: string;
+      pickup_at: string;
+      service_type: string;
+      vehicle_id: string | null;
+      chauffeur_id: string | null;
+    }>(
+      `SELECT b.customer_id, b.pickup_at, b.service_type,
+              (SELECT vehicle_id FROM booking_resources
+                WHERE booking_id = b.id AND resource_type = 'vehicle' AND NOT is_backup LIMIT 1) AS vehicle_id,
+              (SELECT staff_id FROM booking_resources
+                WHERE booking_id = b.id AND resource_type = 'chauffeur' AND NOT is_backup LIMIT 1) AS chauffeur_id
+         FROM bookings b WHERE b.id = $1`,
+      [bookingId],
+    );
+    const row = r.rows[0];
+    if (!row) return null;
+    return {
+      customerId: row.customer_id,
+      pickupAt: row.pickup_at,
+      serviceType: row.service_type,
+      vehicleId: row.vehicle_id,
+      chauffeurId: row.chauffeur_id,
+    };
+  });
+}
+
+export interface DispatchResult {
+  bookingId: string;
+  journeyId: string;
+}
+
+/**
+ * Create the journey and put the booking in service (the −2h en-route step).
+ * The journey row is unique per booking, so a replayed dispatch returns the
+ * existing journey instead of creating a second.
+ */
+export async function dispatchJourney(
+  tenantId: string,
+  bookingId: string,
+): Promise<DispatchResult | null> {
+  return withTenant(tenantId, async (client) => {
+    const existing = await client.query<{ id: string }>(
+      `SELECT id FROM journeys WHERE booking_id = $1`,
+      [bookingId],
+    );
+    if (existing.rows[0]) {
+      return { bookingId, journeyId: existing.rows[0].id };
+    }
+
+    const res = await client.query<{ vehicle_id: string | null; staff_id: string | null }>(
+      `SELECT
+         (SELECT vehicle_id FROM booking_resources
+           WHERE booking_id = $1 AND resource_type = 'vehicle' AND NOT is_backup LIMIT 1) AS vehicle_id,
+         (SELECT staff_id FROM booking_resources
+           WHERE booking_id = $1 AND resource_type = 'chauffeur' AND NOT is_backup LIMIT 1) AS staff_id`,
+      [bookingId],
+    );
+    const assigned = res.rows[0];
+    if (!assigned?.vehicle_id || !assigned.staff_id) return null;
+
+    const journey = await client.query<{ id: string }>(
+      `INSERT INTO journeys (tenant_id, booking_id, vehicle_id, staff_id, dispatched_at)
+       VALUES ($1,$2,$3,$4, now())
+       RETURNING id`,
+      [tenantId, bookingId, assigned.vehicle_id, assigned.staff_id],
+    );
+    const journeyId = journey.rows[0]!.id;
+
+    await client.query(
+      `UPDATE bookings SET status = 'in_service', updated_at = now() WHERE id = $1`,
+      [bookingId],
+    );
+    await recordEvent(client, tenantId, {
+      name: 'journey/dispatched',
+      data: { bookingId, journeyId },
+    });
+    return { bookingId, journeyId };
+  });
+}

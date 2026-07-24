@@ -14,8 +14,10 @@ export type DomainEvent =
   | { name: 'quote/abandoned'; data: { enquiryId: string; lastStep: number } }
   | { name: 'booking/deposit.paid'; data: { bookingId: string } }
   | { name: 'booking/confirmed'; data: { bookingId: string } }
+  | { name: 'booking/balance.paid'; data: { bookingId: string } }
   | { name: 'booking/cancelled'; data: { bookingId: string; reason: string } }
   | { name: 'booking/refunded'; data: { bookingId: string; amountPence: number; reason: string } }
+  | { name: 'journey/dispatched'; data: { bookingId: string; journeyId: string } }
   | { name: 'review/received'; data: { reviewId: string; rating: number } }
   | { name: 'content/published'; data: { collection: string; slug: string } };
 
