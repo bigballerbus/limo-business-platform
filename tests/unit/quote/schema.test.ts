@@ -55,6 +55,18 @@ describe('QuoteSubmissionSchema', () => {
     ).toBe(false);
   });
 
+  it('treats an empty optional destination postcode as absent (return journey)', () => {
+    // The browser submits untouched optional inputs as "", not undefined.
+    const r = QuoteSubmissionSchema.safeParse(
+      base({ destinationType: 'return', destinationPostcode: '', venueId: '' }),
+    );
+    expect(r.success).toBe(true);
+    if (r.success) {
+      expect(r.data.destinationPostcode).toBeUndefined();
+      expect(r.data.venueId).toBeUndefined();
+    }
+  });
+
   it('requires a destination postcode when the journey is one-way by postcode', () => {
     expect(QuoteSubmissionSchema.safeParse(base({ destinationType: 'postcode' })).success).toBe(
       false,

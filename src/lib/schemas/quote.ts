@@ -38,14 +38,23 @@ const ukPostcode = z
 /** Weddings may book further out than other occasions (decision T-004). */
 const MONTH_MS = 30 * 24 * 60 * 60 * 1000;
 
+/**
+ * Optional form fields arrive from the browser as empty strings, not `undefined`
+ * (an untouched `<input>` submits `""`). Treat an empty/whitespace-only value as
+ * absent so an unfilled optional field does not fail its own format check —
+ * otherwise a return-journey quote with a blank destination postcode is rejected
+ * with no visible error. Runs on both client validation and server re-validation.
+ */
+const emptyToUndefined = (v: unknown) => (typeof v === 'string' && v.trim() === '' ? undefined : v);
+
 export const QuoteSubmissionSchema = z
   .object({
     occasion: z.enum(SERVICE_TYPES),
     eventDate: z.coerce.date(),
     pickupPostcode: ukPostcode,
     destinationType: z.enum(['postcode', 'venue', 'return']),
-    destinationPostcode: ukPostcode.optional(),
-    venueId: z.string().uuid().optional(),
+    destinationPostcode: z.preprocess(emptyToUndefined, ukPostcode.optional()),
+    venueId: z.preprocess(emptyToUndefined, z.string().uuid().optional()),
     passengerCount: z.number().int().min(1).max(16),
     durationHours: z.number().positive().max(24),
     vehicleTier: z.enum(VEHICLE_TIERS),
