@@ -324,6 +324,11 @@ export function QuoteEngine() {
             Please check the highlighted fields and try again.
           </p>
         )}
+        {result?.status === 'rate_limited' && (
+          <p role="alert" className="text-[var(--color-danger)]">
+            You&apos;ve made a lot of requests in a short time. Please wait a moment and try again.
+          </p>
+        )}
       </output>
     </form>
   );

@@ -10,7 +10,7 @@ Three surfaces, one codebase:
 
 ## Project status
 
-🟢 **Sprint 11 — Growth engines complete** (per-variant nurture cadences + durable nurture ladder that stops on conversion; review request/record/aggregate with AggregateRating for schema; referral lifecycle issue→redeem→qualify→reward wired to booking events; `completeBooking` + post-service Inngest workflows). Next: Sprint 12 (reporting/dashboards, integrations finalisation, security hardening, UAT & launch gates). Note: full town/venue/route page population and CMS reference-entity transition still depend on OI-8; nurture/reward figures are documented placeholders pending OI-11.
+🟢 **Sprint 12 — Reporting, hardening & launch readiness complete** (pure funnel/conversion KPIs + `dashboardMetrics`; `reporting_funnel` view for Looker Studio; middleware security headers with Report-Only CSP; per-IP quote rate limiting; `docs/LAUNCH-READINESS.md` — Definition-of-Done status, §13.9 alerting spec, runbooks, vendor cutover, go-live gate). **Core build (Sprints 0–12) complete.** Remaining before go-live is client/vendor input (OI-2/3/6/8/11/12) and the manual UAT/accessibility/legal sign-offs in the launch gate — every seam for those is built, stubbed and tested.
 
 - Setup & workflows: **[`docs/DEVELOPMENT.md`](docs/DEVELOPMENT.md)**
 - Agreed decisions: **[`docs/DECISIONS.md`](docs/DECISIONS.md)** (the living decision record; with the spec, the single source of truth).

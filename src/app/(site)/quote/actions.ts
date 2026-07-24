@@ -1,6 +1,8 @@
 'use server';
 
+import { headers } from 'next/headers';
 import { QuoteSubmissionSchema } from '@/lib/schemas/quote';
+import { checkQuoteRateLimit } from '@/lib/security/quoteRateLimit';
 import { calculateQuote } from '@/lib/domain/pricing/engine';
 import { PLACEHOLDER_RATE_CARD } from '@/lib/domain/pricing/ratecard';
 import { BelowMarginFloorError } from '@/lib/domain/pricing/errors';
@@ -20,6 +22,15 @@ import type { QuoteActionResult } from './types';
  * as the transaction commits — messaging is dispatched asynchronously.
  */
 export async function submitQuote(raw: unknown): Promise<QuoteActionResult> {
+  // Abuse control (spec §13): a per-IP fixed window keeps a scripted flood off
+  // the pricing engine and CRM writes before any work is done.
+  const requestHeaders = await headers();
+  const ip = (requestHeaders.get('x-forwarded-for') ?? 'unknown').split(',')[0]!.trim();
+  const limit = checkQuoteRateLimit(ip, Date.now());
+  if (!limit.allowed) {
+    return { status: 'rate_limited', retryAfterSeconds: limit.retryAfterSeconds };
+  }
+
   const parsed = QuoteSubmissionSchema.safeParse(raw);
   if (!parsed.success) {
     const fieldErrors: Record<string, string[]> = {};

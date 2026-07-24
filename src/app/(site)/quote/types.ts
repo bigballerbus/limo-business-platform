@@ -13,4 +13,5 @@ export type QuoteActionResult =
       requiresGuardian: boolean;
     }
   | { status: 'human'; reason: 'multi_vehicle' | 'below_floor' | 'geocode_unavailable' | 'minors' }
-  | { status: 'error'; fieldErrors: Record<string, string[]> };
+  | { status: 'error'; fieldErrors: Record<string, string[]> }
+  | { status: 'rate_limited'; retryAfterSeconds: number };
