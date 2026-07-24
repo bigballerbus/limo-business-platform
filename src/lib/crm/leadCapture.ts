@@ -52,6 +52,93 @@ async function nextOwner(client: PoolClient): Promise<string> {
   return id;
 }
 
+export interface ManualLeadResult {
+  customerId: string;
+  enquiryId: string;
+  reference: string;
+}
+
+/**
+ * BC1 — 9+ passengers is a different regulatory class. We never single-vehicle
+ * quote it, but we also never lose the lead: capture the enquiry (no quote) and
+ * route it to a human for a multi-vehicle arrangement.
+ */
+export async function captureMultiVehicleLead(
+  tenantId: string,
+  submission: QuoteSubmission,
+): Promise<ManualLeadResult> {
+  return withTenant(tenantId, async (client) => {
+    const customer = await client.query<{ id: string }>(
+      `INSERT INTO customers
+         (tenant_id, first_name, last_name, email, mobile,
+          first_touch_source, first_touch_at, last_touch_source, stated_source)
+       VALUES ($1,$2,$3,$4,$5,$6, now(), $7, $8)
+       ON CONFLICT (tenant_id, email) DO UPDATE SET
+         last_touch_source = EXCLUDED.last_touch_source, mobile = EXCLUDED.mobile, updated_at = now()
+       RETURNING id`,
+      [
+        tenantId,
+        submission.contact.firstName,
+        submission.contact.lastName,
+        submission.contact.email,
+        submission.contact.mobile,
+        submission.attribution.firstTouch,
+        submission.attribution.lastTouch,
+        submission.statedSource ?? null,
+      ],
+    );
+    const customerId = customer.rows[0]!.id;
+
+    let parentContactId: string | null = null;
+    if (submission.hasMinors && submission.parentGuardian) {
+      const p = submission.parentGuardian;
+      const parent = await client.query<{ id: string }>(
+        `INSERT INTO customers (tenant_id, first_name, last_name, email, mobile,
+                                first_touch_source, first_touch_at, last_touch_source)
+         VALUES ($1,$2,$3,$4,$5,'guardian', now(),'guardian')
+         ON CONFLICT (tenant_id, email) DO UPDATE SET mobile = EXCLUDED.mobile, updated_at = now()
+         RETURNING id`,
+        [tenantId, p.firstName, p.lastName, p.email, p.mobile],
+      );
+      parentContactId = parent.rows[0]!.id;
+    }
+
+    const ownerId = await nextOwner(client);
+    const enquiryRef = reference('ENQ');
+    const enquiry = await client.query<{ id: string }>(
+      `INSERT INTO enquiries
+         (tenant_id, reference, customer_id, stage, owner_id, service_type, journey_variant,
+          event_date, pickup_postcode, passenger_count, source,
+          next_action, next_action_date, under_18_passengers, parent_contact_id)
+       VALUES ($1,$2,$3,'enquiry',$4,$5,$6,$7,$8,$9,$10,
+               'Provide multi-vehicle quote', now() + interval '5 minutes', $11, $12)
+       RETURNING id`,
+      [
+        tenantId,
+        enquiryRef,
+        customerId,
+        ownerId,
+        submission.occasion,
+        JOURNEY_VARIANT[submission.occasion],
+        submission.eventDate,
+        submission.pickupPostcode,
+        submission.passengerCount,
+        submission.attribution.lastTouch,
+        submission.hasMinors,
+        parentContactId,
+      ],
+    );
+    const enquiryId = enquiry.rows[0]!.id;
+
+    await recordEvent(client, tenantId, {
+      name: 'enquiry/created',
+      data: { enquiryId, tenantId, source: submission.attribution.lastTouch },
+    });
+
+    return { customerId, enquiryId, reference: enquiryRef };
+  });
+}
+
 export async function captureQuoteLead(
   tenantId: string,
   input: { submission: QuoteSubmission; pricing: PricingResult },
@@ -83,6 +170,23 @@ export async function captureQuoteLead(
     );
     const customerId = customer.rows[0]!.id;
 
+    // BC2 — when minors travel, capture the parent/guardian as a contact and
+    // link it. Verification (parent_guardian_verified) happens before deposit.
+    let parentContactId: string | null = null;
+    if (submission.hasMinors && submission.parentGuardian) {
+      const p = submission.parentGuardian;
+      const parent = await client.query<{ id: string }>(
+        `INSERT INTO customers
+           (tenant_id, first_name, last_name, email, mobile,
+            first_touch_source, first_touch_at, last_touch_source)
+         VALUES ($1,$2,$3,$4,$5,'guardian', now(),'guardian')
+         ON CONFLICT (tenant_id, email) DO UPDATE SET mobile = EXCLUDED.mobile, updated_at = now()
+         RETURNING id`,
+        [tenantId, p.firstName, p.lastName, p.email, p.mobile],
+      );
+      parentContactId = parent.rows[0]!.id;
+    }
+
     // 2. Enquiry — owner never null; BC9 next-action dated (5-minute standard).
     const ownerId = await nextOwner(client);
     const enquiryRef = reference('ENQ');
@@ -90,9 +194,10 @@ export async function captureQuoteLead(
       `INSERT INTO enquiries
          (tenant_id, reference, customer_id, stage, owner_id, service_type, journey_variant,
           event_date, pickup_postcode, passenger_count, source,
-          next_action, next_action_date, under_18_passengers, quoted_value_pence, quote_payload)
+          next_action, next_action_date, under_18_passengers, parent_contact_id,
+          quoted_value_pence, quote_payload)
        VALUES ($1,$2,$3,'quoted',$4,$5,$6,$7,$8,$9,$10,
-               'Call customer', now() + interval '5 minutes', $11, $12, $13::jsonb)
+               'Call customer', now() + interval '5 minutes', $11, $12, $13, $14::jsonb)
        RETURNING id`,
       [
         tenantId,
@@ -106,6 +211,7 @@ export async function captureQuoteLead(
         submission.passengerCount,
         submission.attribution.lastTouch,
         submission.hasMinors,
+        parentContactId,
         pricing.totalPence,
         JSON.stringify({ input: submission, output: pricing }),
       ],

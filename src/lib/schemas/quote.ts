@@ -63,6 +63,15 @@ export const QuoteSubmissionSchema = z
       lastTouch: z.string().min(1),
     }),
     statedSource: z.string().optional(),
+    // BC2 — captured when minors travel; verification happens before deposit.
+    parentGuardian: z
+      .object({
+        firstName: z.string().trim().min(1).max(80),
+        lastName: z.string().trim().min(1).max(80),
+        email: z.string().trim().toLowerCase().email(),
+        mobile: z.string().trim().min(7).max(20),
+      })
+      .optional(),
   })
   .superRefine((data, ctx) => {
     const now = Date.now();
@@ -91,6 +100,13 @@ export const QuoteSubmissionSchema = z
     }
     if (data.destinationType === 'venue' && !data.venueId) {
       ctx.addIssue({ code: 'custom', path: ['venueId'], message: 'Select a venue' });
+    }
+    if (data.hasMinors && !data.parentGuardian) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['parentGuardian'],
+        message: 'A parent or guardian must be provided when under-18s are travelling',
+      });
     }
   });
 

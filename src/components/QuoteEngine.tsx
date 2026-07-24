@@ -50,6 +50,7 @@ export function QuoteEngine() {
   const {
     register,
     handleSubmit,
+    watch,
     formState: { errors, isSubmitting },
   } = useForm<QuoteSubmission>({
     resolver: zodResolver(QuoteSubmissionSchema),
@@ -189,6 +190,52 @@ export function QuoteEngine() {
           <input type="checkbox" {...register('hasMinors')} />
           <span>This booking carries passengers under 18</span>
         </label>
+
+        {watch('hasMinors') && (
+          <fieldset className="grid gap-3 rounded-md border border-[var(--color-line)] p-4">
+            <legend className="px-1 text-sm font-medium">Parent or guardian</legend>
+            <p className="text-sm text-[var(--color-ink-muted)]">
+              For journeys carrying under-18s, the booking and deposit must be made by a verified
+              parent or guardian.
+            </p>
+            <div className="grid grid-cols-2 gap-4">
+              <label className="grid gap-1">
+                <span>Guardian first name</span>
+                <input
+                  {...register('parentGuardian.firstName')}
+                  autoComplete="given-name"
+                  className="rounded border border-[var(--color-line)] p-2"
+                />
+              </label>
+              <label className="grid gap-1">
+                <span>Guardian last name</span>
+                <input
+                  {...register('parentGuardian.lastName')}
+                  autoComplete="family-name"
+                  className="rounded border border-[var(--color-line)] p-2"
+                />
+              </label>
+            </div>
+            <label className="grid gap-1">
+              <span>Guardian email</span>
+              <input
+                type="email"
+                {...register('parentGuardian.email')}
+                autoComplete="email"
+                className="rounded border border-[var(--color-line)] p-2"
+              />
+            </label>
+            <label className="grid gap-1">
+              <span>Guardian mobile</span>
+              <input
+                type="tel"
+                {...register('parentGuardian.mobile')}
+                autoComplete="tel"
+                className="rounded border border-[var(--color-line)] p-2"
+              />
+            </label>
+          </fieldset>
+        )}
       </fieldset>
 
       <fieldset className="grid gap-4">
@@ -259,6 +306,12 @@ export function QuoteEngine() {
             <p className="text-sm text-[var(--color-ink-muted)]">
               Reference {result.reference}. A coordinator will confirm shortly.
             </p>
+            {result.requiresGuardian && (
+              <p className="mt-2 text-sm">
+                As under-18s are travelling, a parent or guardian will need to verify the booking
+                before the deposit is taken.
+              </p>
+            )}
           </div>
         )}
         {result?.status === 'human' && (

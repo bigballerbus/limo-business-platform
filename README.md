@@ -10,7 +10,7 @@ Three surfaces, one codebase:
 
 ## Project status
 
-🟢 **Sprint 5 — Speed-to-lead complete** (Inngest workflows, BC6 message-class send gate, SLA escalation, trace IDs). Next: Sprint 6 (safeguarding & capacity branches — BC1/BC2). Deferred: CMS reference-entity transition alongside the page-templates milestone.
+🟢 **Sprint 6 — Safeguarding & capacity complete** (BC1 multi-vehicle routing for 9+ parties with no lost lead; BC2 parent/guardian capture, linkage and deposit gate). Next: Sprint 7 (booking + Stripe deposit, BC5 double-booking rollback). Deferred: CMS reference-entity transition alongside the page-templates milestone.
 
 - Setup & workflows: **[`docs/DEVELOPMENT.md`](docs/DEVELOPMENT.md)**
 - Agreed decisions: **[`docs/DECISIONS.md`](docs/DECISIONS.md)** (the living decision record; with the spec, the single source of truth).

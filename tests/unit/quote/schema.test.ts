@@ -65,4 +65,34 @@ describe('QuoteSubmissionSchema', () => {
       ).success,
     ).toBe(true);
   });
+
+  it('requires a parent/guardian when the booking carries under-18s (BC2)', () => {
+    const r = QuoteSubmissionSchema.safeParse(base({ hasMinors: true }));
+    expect(r.success).toBe(false);
+    if (!r.success) {
+      expect(r.error.issues.some((i) => i.path[0] === 'parentGuardian')).toBe(true);
+    }
+  });
+
+  it('accepts a minors booking once a guardian is supplied and normalises it', () => {
+    const r = QuoteSubmissionSchema.safeParse(
+      base({
+        hasMinors: true,
+        parentGuardian: {
+          firstName: 'Marie',
+          lastName: 'Curie',
+          email: 'MARIE@Example.com',
+          mobile: '07999888777',
+        },
+      }),
+    );
+    expect(r.success).toBe(true);
+    if (r.success) {
+      expect(r.data.parentGuardian?.email).toBe('marie@example.com');
+    }
+  });
+
+  it('does not require a guardian when no minors travel', () => {
+    expect(QuoteSubmissionSchema.safeParse(base({ hasMinors: false })).success).toBe(true);
+  });
 });

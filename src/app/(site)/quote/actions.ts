@@ -5,7 +5,8 @@ import { calculateQuote } from '@/lib/domain/pricing/engine';
 import { PLACEHOLDER_RATE_CARD } from '@/lib/domain/pricing/ratecard';
 import { BelowMarginFloorError } from '@/lib/domain/pricing/errors';
 import { toPricingInput } from '@/lib/domain/quote/mapToPricing';
-import { captureQuoteLead } from '@/lib/crm/leadCapture';
+import { captureMultiVehicleLead, captureQuoteLead } from '@/lib/crm/leadCapture';
+import { capacityDecision } from '@/lib/domain/safeguarding/rules';
 import { getDefaultTenant } from '@/lib/tenant/resolve';
 import { stubGeocoder } from '@/lib/geo/geocoder';
 import { inngest } from '@/inngest/client';
@@ -29,11 +30,15 @@ export async function submitQuote(raw: unknown): Promise<QuoteActionResult> {
   }
   const data = parsed.data;
 
-  // BC1 — 9+ passengers is a different regulatory class; route to a human
-  // (the full multi-vehicle branch lands in the safeguarding/capacity sprint).
-  if (data.passengerCount > 8) return { status: 'human', reason: 'multi_vehicle' };
-
   const tenant = await getDefaultTenant();
+
+  // BC1 — 9+ passengers is a different regulatory class. Never single-vehicle
+  // quote it, but capture the lead so it is never lost, then route to a human.
+  if (capacityDecision(data.passengerCount) === 'multi_vehicle') {
+    await captureMultiVehicleLead(tenant.id, data);
+    return { status: 'human', reason: 'multi_vehicle' };
+  }
+
   const pickup = await stubGeocoder.geocode(data.pickupPostcode);
   const destination =
     data.destinationType === 'return'
@@ -78,5 +83,6 @@ export async function submitQuote(raw: unknown): Promise<QuoteActionResult> {
     rangeLowPence: pricing.rangeLowPence,
     rangeHighPence: pricing.rangeHighPence,
     breakdown: pricing.breakdown,
+    requiresGuardian: data.hasMinors,
   };
 }
