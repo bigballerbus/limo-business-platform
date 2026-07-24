@@ -36,16 +36,19 @@ export const enforceProofGate =
     const becomingPublished = status === 'published' && !wasPublished;
     if (!becomingPublished || !data) return data;
 
+    // A publish is often a status-only update; unchanged fields (body, images…)
+    // live on originalDoc. Evaluate the merged document.
+    const doc = { ...(originalDoc ?? {}), ...data } as Record<string, unknown>;
     const threshold = getThreshold(collectionSlug);
-    const bodyText = lexicalToText(data.body);
+    const bodyText = lexicalToText(doc.body);
 
     const result = evaluateGate(
       {
         assetCounts: {
-          photo: arrayLen(data.images) || arrayLen(data.gallery),
-          fact: arrayLen(data.facts),
-          faq: arrayLen(data.faqs),
-          review: arrayLen(data.reviews),
+          photo: arrayLen(doc.images) || arrayLen(doc.gallery),
+          fact: arrayLen(doc.facts),
+          faq: arrayLen(doc.faqs),
+          review: arrayLen(doc.reviews),
           job: 0, // Proof-Ledger jobs are wired with the reference-entity step.
         },
         wordCount: bodyText.split(/\s+/).filter(Boolean).length,

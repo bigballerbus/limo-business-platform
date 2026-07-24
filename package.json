@@ -28,6 +28,7 @@
     "test:a11y": "playwright test --project=a11y",
     "test:seo": "playwright test --project=seo",
     "test:integration": "vitest run --config vitest.integration.config.ts",
+    "verify:proof-gate": "tsx scripts/verify/proof-gate.ts",
     "lhci": "lhci autorun",
     "db:migrate": "tsx scripts/db/migrate.ts",
     "db:seed": "tsx scripts/db/seed.ts",
