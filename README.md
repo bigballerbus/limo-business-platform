@@ -10,7 +10,7 @@ Three surfaces, one codebase:
 
 ## Project status
 
-🟢 **Sprint 10 — Never-forgotten-lead sweep complete** (BC9: dead-letter queue with tenant RLS; pure Needs-Attention classification; `findNeedsAttention` dashboard query — overdue leads, stalled deposits, open dead-letters ranked by urgency; `sweepOrphans` re-drives overdue leads; hourly Inngest cron; secret-guarded data endpoint). Next: Sprint 11 (nurture workflows, reviews, referrals). Note: full town/venue/route page population and CMS reference-entity transition still depend on OI-8; the rich in-admin dashboard UI binds in Sprint 12.
+🟢 **Sprint 11 — Growth engines complete** (per-variant nurture cadences + durable nurture ladder that stops on conversion; review request/record/aggregate with AggregateRating for schema; referral lifecycle issue→redeem→qualify→reward wired to booking events; `completeBooking` + post-service Inngest workflows). Next: Sprint 12 (reporting/dashboards, integrations finalisation, security hardening, UAT & launch gates). Note: full town/venue/route page population and CMS reference-entity transition still depend on OI-8; nurture/reward figures are documented placeholders pending OI-11.
 
 - Setup & workflows: **[`docs/DEVELOPMENT.md`](docs/DEVELOPMENT.md)**
 - Agreed decisions: **[`docs/DECISIONS.md`](docs/DECISIONS.md)** (the living decision record; with the spec, the single source of truth).

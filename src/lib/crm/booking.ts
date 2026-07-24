@@ -600,3 +600,55 @@ export async function dispatchJourney(
     return { bookingId, journeyId };
   });
 }
+
+/** service_types code → journey_variant enum. */
+const SERVICE_TO_VARIANT: Record<string, string> = {
+  wedding: 'wedding',
+  prom: 'prom',
+  airport_transfer: 'transfer',
+  corporate: 'corporate',
+  celebration: 'celebration',
+};
+
+export type CompleteResult =
+  | { status: 'completed'; bookingId: string; customerId: string; variant: string }
+  | { status: 'already_completed'; bookingId: string }
+  | { status: 'not_found' };
+
+/**
+ * Complete a booking after the service has run: close the journey, mark the
+ * booking completed, and emit booking/completed (which drives the review request
+ * and any post-service nurture). Idempotent.
+ */
+export async function completeBooking(
+  tenantId: string,
+  bookingId: string,
+): Promise<CompleteResult> {
+  return withTenant(tenantId, async (client) => {
+    const b = await client.query<{ status: string; customer_id: string; service_type: string }>(
+      `SELECT status, customer_id, service_type FROM bookings WHERE id = $1`,
+      [bookingId],
+    );
+    const booking = b.rows[0];
+    if (!booking) return { status: 'not_found' };
+    if (booking.status === 'completed') {
+      return { status: 'already_completed', bookingId };
+    }
+
+    await client.query(
+      `UPDATE bookings SET status = 'completed', updated_at = now() WHERE id = $1`,
+      [bookingId],
+    );
+    await client.query(
+      `UPDATE journeys SET completed_at = COALESCE(completed_at, now()) WHERE booking_id = $1`,
+      [bookingId],
+    );
+
+    const variant = SERVICE_TO_VARIANT[booking.service_type] ?? booking.service_type;
+    await recordEvent(client, tenantId, {
+      name: 'booking/completed',
+      data: { bookingId, customerId: booking.customer_id, variant },
+    });
+    return { status: 'completed', bookingId, customerId: booking.customer_id, variant };
+  });
+}

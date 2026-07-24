@@ -17,7 +17,13 @@ export type DomainEvent =
   | { name: 'booking/balance.paid'; data: { bookingId: string } }
   | { name: 'booking/cancelled'; data: { bookingId: string; reason: string } }
   | { name: 'booking/refunded'; data: { bookingId: string; amountPence: number; reason: string } }
+  | { name: 'booking/completed'; data: { bookingId: string; customerId: string; variant: string } }
   | { name: 'journey/dispatched'; data: { bookingId: string; journeyId: string } }
+  | {
+      name: 'enquiry/nurture.entered';
+      data: { enquiryId: string; tenantId: string; variant: string };
+    }
+  | { name: 'referral/qualified'; data: { referralId: string; bookingId: string } }
   | { name: 'review/received'; data: { reviewId: string; rating: number } }
   | { name: 'content/published'; data: { collection: string; slug: string } };
 
